@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { transactionService } from '../services/api';
+import { transactionService } from '../app/api';
 
 /**
  * Query keys para React Query
