@@ -1,0 +1,132 @@
+/**
+ * Formatea un número como moneda en pesos chilenos
+ * @param {number} amount - Monto a formatear
+ * @returns {string} Monto formateado
+ */
+export const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
+/**
+ * Formatea una fecha para mostrar
+ * @param {string} dateString - Fecha en formato ISO
+ * @returns {string} Fecha formateada
+ */
+export const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('es-CL', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+};
+
+/**
+ * Formatea una fecha para input datetime-local
+ * @param {string|Date} date - Fecha a formatear
+ * @returns {string} Fecha en formato yyyy-MM-ddTHH:mm
+ */
+export const formatDateForInput = (date) => {
+  if (!date) return '';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+/**
+ * Valida los datos de una transacción
+ * @param {Object} transaction - Datos de la transacción
+ * @returns {Object} Objeto con isValid y errors
+ */
+export const validateTransaction = (transaction) => {
+  const errors = {};
+
+  // Validar monto
+  if (!transaction.amount && transaction.amount !== 0) {
+    errors.amount = 'El monto es obligatorio';
+  } else if (transaction.amount < 0) {
+    errors.amount = 'El monto no puede ser negativo';
+  } else if (!Number.isInteger(Number(transaction.amount))) {
+    errors.amount = 'El monto debe ser un número entero';
+  }
+
+  // Validar giro/comercio
+  if (!transaction.businessCategory || transaction.businessCategory.trim() === '') {
+    errors.businessCategory = 'El giro o comercio es obligatorio';
+  } else if (transaction.businessCategory.length > 255) {
+    errors.businessCategory = 'El giro no puede exceder 255 caracteres';
+  }
+
+  // Validar nombre de Tenpista
+  if (!transaction.tenpistaName || transaction.tenpistaName.trim() === '') {
+    errors.tenpistaName = 'El nombre del Tenpista es obligatorio';
+  } else if (transaction.tenpistaName.length > 255) {
+    errors.tenpistaName = 'El nombre no puede exceder 255 caracteres';
+  }
+
+  // Validar fecha
+  if (!transaction.transactionDate) {
+    errors.transactionDate = 'La fecha de transacción es obligatoria';
+  } else {
+    const transactionDate = new Date(transaction.transactionDate);
+    const now = new Date();
+    if (transactionDate > now) {
+      errors.transactionDate = 'La fecha de transacción no puede ser futura';
+    }
+  }
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors,
+  };
+};
+
+/**
+ * Trunca un texto si excede una longitud máxima
+ * @param {string} text - Texto a truncar
+ * @param {number} maxLength - Longitud máxima
+ * @returns {string} Texto truncado
+ */
+export const truncateText = (text, maxLength = 50) => {
+  if (!text) return '';
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+};
+
+/**
+ * Obtiene la fecha y hora actual en formato para input
+ * @returns {string} Fecha actual en formato yyyy-MM-ddTHH:mm
+ */
+export const getCurrentDateTime = () => {
+  return formatDateForInput(new Date());
+};
+
+/**
+ * Debounce function para optimizar búsquedas
+ * @param {Function} func - Función a ejecutar
+ * @param {number} wait - Tiempo de espera en ms
+ * @returns {Function} Función con debounce
+ */
+export const debounce = (func, wait = 300) => {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
