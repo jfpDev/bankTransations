@@ -13,7 +13,7 @@ import {
   useUpdateTransaction,
   useDeleteTransaction,
 } from '../hooks/useTransactions';
-// import '../styles/App.css';
+import '../styles/App.css';
 
 // Configurar React Query Client
 const queryClient = new QueryClient({
@@ -49,7 +49,7 @@ function AppContent() {
   const handleUpdate = async (transactionData) => {
     try {
       await updateMutation.mutateAsync({
-        id: editingTransaction.id,
+        id: (editingTransaction as any).id,
         data: transactionData,
       });
       toast.success('Transacción actualizada exitosamente');

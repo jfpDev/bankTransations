@@ -19,7 +19,7 @@
     <description>API REST para gestión de transacciones</description>
     
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
         <springdoc.version>2.3.0</springdoc.version>
     </properties>
     

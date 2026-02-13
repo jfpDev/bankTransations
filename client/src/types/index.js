@@ -2,11 +2,9 @@
  * @typedef {Object} Transaction
  * @property {number} [id] - ID de la transacción
  * @property {number} amount - Monto de la transacción en pesos
- * @property {string} businessCategory - Giro o comercio de la transacción
- * @property {string} tenpistaName - Nombre del Tenpista
+ * @property {string} businessName - Giro o comercio de la transacción
+ * @property {string} name - Nombre del Tenpista
  * @property {string} transactionDate - Fecha de la transacción (ISO string)
- * @property {string} [createdAt] - Fecha de creación
- * @property {string} [updatedAt] - Fecha de última actualización
  */
 
 /**
@@ -19,4 +17,4 @@
  * @property {string} path - Path donde ocurrió el error
  */
 
-export const TransactionTypes = {};
+export const TransactionTypes = {Transaction, ErrorResponse};

@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  database:
+    image: ae1a6a12d1a7
+    container_name: postgresql
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: transactions_db
+      POSTGRES_USER: transactions_user
+      POSTGRES_PASSWORD: transactions_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U transactions_user -d transactions_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - transactions-network
+
+  # Backend Spring Boot
+  service:
+    build:
+      context: ./service
+      dockerfile: Dockerfile
+    container_name: transaction-service
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: transactions_db
+      DB_USER: transactions_user
+      DB_PASSWORD: transactions_pass
+      CORS_ORIGINS: http://localhost:3000,http://localhost:80
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - transactions-network
+
+  # Frontend React
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: transaction-client
+    restart: unless-stopped
+    depends_on:
+      - service
+    environment:
+      REACT_APP_API_URL: http://localhost:8080/api
+    ports:
+      - "3000:80"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - transactions-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  transactions-network:
+    driver: bridge

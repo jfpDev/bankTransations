@@ -12,8 +12,8 @@ import '../styles/TransactionForm.css';
 const TransactionForm = ({ transaction, onSubmit, onCancel, isLoading }) => {
   const [formData, setFormData] = useState({
     amount: '',
-    businessCategory: '',
-    tenpistaName: '',
+    businessName: '',
+    name: '',
     transactionDate: getCurrentDateTime(),
   });
 
