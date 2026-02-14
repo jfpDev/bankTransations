@@ -297,14 +297,28 @@ docker tag transactions-service:latest jfelipepava/transactions-service:1.0.0
 docker tag transactions-client:latest jfelipepava/transactions-client:1.0.0
 
 # Push a Docker Hub
-docker push jfelipepava/transactions-service:1.0.0
-docker push jfelipepava/transactions-client:1.0.0
+docker push jfelipepava/tenpi:transactions-service
+docker push jfelipepava/tenpi:transactions-client
 ```
 
 ### Construir y correr de manera local la app
 
 ```bash
 docker-compose up --build
+```
+
+### Descargar y correr las imagenes de los contenedores
+
+```bash
+docker pull jfelipepava/tenpi:transactions-service
+docker pull jfelipepava/tenpi:transactions-client
+docker pull postgres:latest
+
+docker run --name postgresql -e POSTGRES_PASSWORD=transactions_pass -e POSTGRES_USER=transactions_user -e POSTGRES_DB=transactions_db -p 5432:5432 --network transactions-network -d postgres
+
+docker run --name transaction-service -p 8080:8080   -e DB_HOST=postgresql   -e DB_NAME=transactions_db   -e DB_USER=transactions_user   -e DB_PASSWORD=transactions_pass   --network transactions-network transactions-service
+
+docker run --name transaction-client -p 3000:3000 --network transactions-network transactions-client
 ```
 
 ## 📊 Características Técnicas Avanzadas
