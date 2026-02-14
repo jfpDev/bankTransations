@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   # Base de datos PostgreSQL
-  database:
-    image: ae1a6a12d1a7
+  postgresql:
+    image: postgres
     container_name: postgresql
     restart: unless-stopped
     environment:
@@ -12,30 +12,19 @@ services:
       POSTGRES_PASSWORD: transactions_pass
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U transactions_user -d transactions_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - transactions-network
 
   # Backend Spring Boot
-  service:
+  transaction-service:
     build:
       context: ./service
       dockerfile: Dockerfile
     container_name: transaction-service
     restart: unless-stopped
-    depends_on:
-      database:
-        condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: prod
-      DB_HOST: database
+      SPRING_PROFILES_ACTIVE: dev
+      DB_HOST: postgresql
       DB_PORT: 5432
       DB_NAME: transactions_db
       DB_USER: transactions_user
@@ -53,29 +42,20 @@ services:
       - transactions-network
 
   # Frontend React
-  client:
+  transaction-client:
     build:
       context: ./client
       dockerfile: Dockerfile
     container_name: transaction-client
     restart: unless-stopped
     depends_on:
-      - service
+      - transaction-service
     environment:
       REACT_APP_API_URL: http://localhost:8080/api
     ports:
-      - "3000:80"
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
+      - "3000:3000"
     networks:
       - transactions-network
-
-volumes:
-  postgres_data:
-    driver: local
 
 networks:
   transactions-network:

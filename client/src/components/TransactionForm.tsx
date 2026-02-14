@@ -4,29 +4,43 @@ import {
   formatDateForInput,
   getCurrentDateTime,
 } from '../utils/helpers';
+import { Transaction } from '../types';
+
 import '../styles/TransactionForm.css';
 
-/**
- * Componente para crear y editar transacciones
- */
-const TransactionForm = ({ transaction, onSubmit, onCancel, isLoading }) => {
-  const [formData, setFormData] = useState({
-    amount: '',
-    businessName: '',
-    name: '',
-    transactionDate: getCurrentDateTime(),
-  });
 
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
+interface TransactionFormType {
+  transaction?: Transaction | null;
+  onSubmit: (transaction: Transaction) => void;
+  onCancel: () => void;
+  isLoading: boolean;
+}
+export type TransactionType = {
+  amount: number;
+  businessName: string;
+  name: string;
+  transactionDate: string;
+}
+export const initialData = {
+  amount: 0,
+  businessName: '',
+  name: '',
+  transactionDate: getCurrentDateTime(),
+}
+
+const TransactionForm = ({ transaction, onSubmit, onCancel, isLoading }: TransactionFormType) => {
+  const [formData, setFormData] = useState<TransactionType>(initialData);
+
+  const [errors, setErrors] = useState<Partial<Record<keyof TransactionType, string>>>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof TransactionType, boolean>>>({});
 
   // Inicializar formulario con datos de transacción existente
   useEffect(() => {
     if (transaction) {
       setFormData({
-        amount: transaction.amount || '',
-        businessCategory: transaction.businessCategory || '',
-        tenpistaName: transaction.tenpistaName || '',
+        amount: transaction.amount || 0,
+        businessName: transaction.businessName || '',
+        name: transaction.name || '',
         transactionDate: transaction.transactionDate
           ? formatDateForInput(transaction.transactionDate)
           : getCurrentDateTime(),
@@ -34,7 +48,7 @@ const TransactionForm = ({ transaction, onSubmit, onCancel, isLoading }) => {
     }
   }, [transaction]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -42,7 +56,7 @@ const TransactionForm = ({ transaction, onSubmit, onCancel, isLoading }) => {
     }));
 
     // Limpiar error del campo cuando el usuario empieza a escribir
-    if (errors[name]) {
+    if (errors[name as keyof TransactionType]) {
       setErrors((prev) => ({
         ...prev,
         [name]: '',
@@ -50,7 +64,7 @@ const TransactionForm = ({ transaction, onSubmit, onCancel, isLoading }) => {
     }
   };
 
-  const handleBlur = (e) => {
+  const handleBlur = (e: any) => {
     const { name } = e.target;
     setTouched((prev) => ({
       ...prev,
@@ -58,8 +72,8 @@ const TransactionForm = ({ transaction, onSubmit, onCancel, isLoading }) => {
     }));
 
     // Validar campo individual
-    const validation = validateTransaction(formData);
-    if (validation.errors[name]) {
+    const validation = validateTransaction(formData) as any;
+    if (validation.errors && validation.errors[name]) {
       setErrors((prev) => ({
         ...prev,
         [name]: validation.errors[name],
@@ -67,14 +81,14 @@ const TransactionForm = ({ transaction, onSubmit, onCancel, isLoading }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
 
     // Marcar todos los campos como tocados
     setTouched({
       amount: true,
-      businessCategory: true,
-      tenpistaName: true,
+      businessName: true,
+      name: true,
       transactionDate: true,
     });
 
@@ -89,25 +103,26 @@ const TransactionForm = ({ transaction, onSubmit, onCancel, isLoading }) => {
     // Preparar datos para enviar
     const transactionData = {
       ...formData,
-      amount: parseInt(formData.amount, 10),
+      amount: formData.amount,
       transactionDate: new Date(formData.transactionDate).toISOString(),
     };
 
     onSubmit(transactionData);
+    setFormData(initialData);
   };
 
   const handleReset = () => {
     setFormData({
-      amount: '',
-      businessCategory: '',
-      tenpistaName: '',
+      amount: 0,
+      businessName: '',
+      name: '',
       transactionDate: getCurrentDateTime(),
     });
     setErrors({});
     setTouched({});
   };
 
-  const isEditMode = !!transaction;
+  const isEditMode = transaction?.amount !== 0;
 
   return (
     <div className="transaction-form-container">
@@ -122,22 +137,22 @@ const TransactionForm = ({ transaction, onSubmit, onCancel, isLoading }) => {
 
       <form onSubmit={handleSubmit} className="transaction-form">
         <div className="form-group">
-          <label htmlFor="tenpistaName">
-            Nombre del Tenpista <span className="required">*</span>
+          <label htmlFor="name">
+            Nombre del Usuario <span className="required">*</span>
           </label>
           <input
             type="text"
-            id="tenpistaName"
-            name="tenpistaName"
-            value={formData.tenpistaName}
+            id="name"
+            name="name"
+            value={formData.name}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={errors.tenpistaName && touched.tenpistaName ? 'error' : ''}
+            className={errors.name && touched.name ? 'error' : ''}
             placeholder="Ej: Juan Pérez"
             disabled={isLoading}
           />
-          {errors.tenpistaName && touched.tenpistaName && (
-            <span className="error-message">{errors.tenpistaName}</span>
+          {errors.name && touched.name && (
+            <span className="error-message">{errors.name}</span>
           )}
         </div>
 
@@ -186,22 +201,22 @@ const TransactionForm = ({ transaction, onSubmit, onCancel, isLoading }) => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="businessCategory">
+          <label htmlFor="businessName">
             Giro o Comercio <span className="required">*</span>
           </label>
           <input
             type="text"
-            id="businessCategory"
-            name="businessCategory"
-            value={formData.businessCategory}
+            id="businessName"
+            name="businessName"
+            value={formData.businessName}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={errors.businessCategory && touched.businessCategory ? 'error' : ''}
-            placeholder="Ej: Supermercado, Restaurant, Farmacia"
+            className={errors.businessName && touched.businessName ? 'error' : ''}
+            placeholder="Ej: Supermercado, Restaurante, Farmacia"
             disabled={isLoading}
           />
-          {errors.businessCategory && touched.businessCategory && (
-            <span className="error-message">{errors.businessCategory}</span>
+          {errors.businessName && touched.businessName && (
+            <span className="error-message">{errors.businessName}</span>
           )}
         </div>
 

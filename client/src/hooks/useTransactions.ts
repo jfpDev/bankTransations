@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { transactionService } from '../app/api';
+import { Transaction } from '../types';
 
 /**
  * Query keys para React Query
@@ -7,22 +8,19 @@ import { transactionService } from '../app/api';
 export const transactionKeys = {
   all: ['transactions'],
   lists: () => [...transactionKeys.all, 'list'],
-  list: (filters) => [...transactionKeys.lists(), { filters }],
+  list: (filters: any) => [...transactionKeys.lists(), { filters }],
   details: () => [...transactionKeys.all, 'detail'],
-  detail: (id) => [...transactionKeys.details(), id],
-  byTenpista: (name) => [...transactionKeys.all, 'tenpista', name],
+  detail: (id: any) => [...transactionKeys.details(), id],
+  byTenpista: (name: string) => [...transactionKeys.all, 'name', name],
 };
 
-/**
- * Hook para obtener todas las transacciones
- * @returns {Object} Query result con data, isLoading, error, etc.
- */
+
 export const useTransactions = () => {
   return useQuery({
     queryKey: transactionKeys.lists(),
     queryFn: transactionService.getAll,
     staleTime: 1000 * 60 * 5, // 5 minutos
-    cacheTime: 1000 * 60 * 10, // 10 minutos
+    // cacheTime: 1000 * 60 * 10, // 10 minutos
   });
 };
 
@@ -31,7 +29,7 @@ export const useTransactions = () => {
  * @param {number} id - ID de la transacción
  * @returns {Object} Query result
  */
-export const useTransaction = (id) => {
+export const useTransaction = (id: number) => {
   return useQuery({
     queryKey: transactionKeys.detail(id),
     queryFn: () => transactionService.getById(id),
@@ -45,11 +43,11 @@ export const useTransaction = (id) => {
  * @param {string} tenpistaName - Nombre del Tenpista
  * @returns {Object} Query result
  */
-export const useTransactionsByTenpista = (tenpistaName) => {
+export const useTransactionsByTenpista = (name: string) => {
   return useQuery({
-    queryKey: transactionKeys.byTenpista(tenpistaName),
-    queryFn: () => transactionService.getByTenpista(tenpistaName),
-    enabled: !!tenpistaName,
+    queryKey: transactionKeys.byTenpista(name),
+    queryFn: () => transactionService.getByTenpista(name),
+    enabled: !!name,
     staleTime: 1000 * 60 * 5,
   });
 };
@@ -78,7 +76,7 @@ export const useUpdateTransaction = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }) => transactionService.update(id, data),
+    mutationFn: ({ id, data }: any) => transactionService.update(id, data),
     onSuccess: (data, variables) => {
       // Invalidar queries relevantes
       queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });

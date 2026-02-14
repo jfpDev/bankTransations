@@ -4,7 +4,7 @@ import { formatCurrency, formatDate } from '../utils/helpers';
 import '../styles/TransactionList.css';
 
 interface Transaction {
-  id: string | number;
+  id: number;
   name: string;
   amount: number;
   businessName: string;
@@ -14,7 +14,7 @@ interface Transaction {
 interface TransactionListProps {
   transactions: Transaction[] | undefined;
   onEdit: (transaction: Transaction) => void;
-  onDelete: (id: string | number) => void;
+  onDelete: (id: number) => void;
   isLoading: boolean;
 }
 

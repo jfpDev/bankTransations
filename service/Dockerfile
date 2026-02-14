@@ -21,7 +21,7 @@ COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
 
 # Variables de entorno por defecto
-ENV SPRING_PROFILES_ACTIVE=prod
+ENV SPRING_PROFILES_ACTIVE=dev
 ENV JAVA_OPTS="-Xms256m -Xmx512m"
 
 # Healthcheck

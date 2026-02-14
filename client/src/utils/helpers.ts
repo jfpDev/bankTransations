@@ -1,9 +1,12 @@
+import { initialData } from "../components/TransactionForm";
+import { Transaction } from "../types";
+
 /**
  * Formatea un número como moneda en pesos chilenos
  * @param {number} amount - Monto a formatear
  * @returns {string} Monto formateado
  */
-export const formatCurrency = (amount) => {
+export const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('es-CL', {
     style: 'currency',
     currency: 'CLP',
@@ -17,7 +20,7 @@ export const formatCurrency = (amount) => {
  * @param {string} dateString - Fecha en formato ISO
  * @returns {string} Fecha formateada
  */
-export const formatDate = (dateString) => {
+export const formatDate = (dateString: string) => {
   if (!dateString) return '';
   const date = new Date(dateString);
   return new Intl.DateTimeFormat('es-CL', {
@@ -34,7 +37,7 @@ export const formatDate = (dateString) => {
  * @param {string|Date} date - Fecha a formatear
  * @returns {string} Fecha en formato yyyy-MM-ddTHH:mm
  */
-export const formatDateForInput = (date) => {
+export const formatDateForInput = (date: string | Date) => {
   if (!date) return '';
   const d = typeof date === 'string' ? new Date(date) : date;
   const year = d.getFullYear();
@@ -50,8 +53,20 @@ export const formatDateForInput = (date) => {
  * @param {Object} transaction - Datos de la transacción
  * @returns {Object} Objeto con isValid y errors
  */
-export const validateTransaction = (transaction) => {
-  const errors = {};
+type ErrorsType = {
+  amount: string;
+  businessName: string;
+  name: string;
+  transactionDate: string;
+}
+export const validateTransaction = (transaction: Transaction) => {
+  const errors: ErrorsType = {
+    amount: '',
+    businessName: '',
+    name: '',
+    transactionDate: '',
+  
+  };
 
   // Validar monto
   if (!transaction.amount && transaction.amount !== 0) {
@@ -63,17 +78,17 @@ export const validateTransaction = (transaction) => {
   }
 
   // Validar giro/comercio
-  if (!transaction.businessCategory || transaction.businessCategory.trim() === '') {
-    errors.businessCategory = 'El giro o comercio es obligatorio';
-  } else if (transaction.businessCategory.length > 255) {
-    errors.businessCategory = 'El giro no puede exceder 255 caracteres';
+  if (!transaction.businessName || transaction.businessName.trim() === '') {
+    errors.businessName = 'El giro o comercio es obligatorio';
+  } else if (transaction.businessName.length > 255) {
+    errors.businessName = 'El giro no puede exceder 255 caracteres';
   }
 
   // Validar nombre de Tenpista
-  if (!transaction.tenpistaName || transaction.tenpistaName.trim() === '') {
-    errors.tenpistaName = 'El nombre del Tenpista es obligatorio';
-  } else if (transaction.tenpistaName.length > 255) {
-    errors.tenpistaName = 'El nombre no puede exceder 255 caracteres';
+  if (!transaction.name || transaction.name.trim() === '') {
+    errors.name = 'El nombre del usuario es obligatorio';
+  } else if (transaction.name.length > 255) {
+    errors.name = 'El nombre no puede exceder 255 caracteres';
   }
 
   // Validar fecha
@@ -88,7 +103,7 @@ export const validateTransaction = (transaction) => {
   }
 
   return {
-    isValid: Object.keys(errors).length === 0,
+    isValid: errors.amount === '' && errors.businessName === '' && errors.name === '' && errors.transactionDate === '',
     errors,
   };
 };
@@ -99,7 +114,7 @@ export const validateTransaction = (transaction) => {
  * @param {number} maxLength - Longitud máxima
  * @returns {string} Texto truncado
  */
-export const truncateText = (text, maxLength = 50) => {
+export const truncateText = (text: string, maxLength = 50) => {
   if (!text) return '';
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength) + '...';
@@ -119,9 +134,9 @@ export const getCurrentDateTime = () => {
  * @param {number} wait - Tiempo de espera en ms
  * @returns {Function} Función con debounce
  */
-export const debounce = (func, wait = 300) => {
-  let timeout;
-  return function executedFunction(...args) {
+export const debounce = (func: (...args: any[]) => any, wait = 300) => {
+  let timeout: any;
+  return function executedFunction(...args: any[]) {
     const later = () => {
       clearTimeout(timeout);
       func(...args);

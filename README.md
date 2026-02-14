@@ -109,7 +109,7 @@ http://localhost:8080/swagger-ui.html
 |--------|----------|-------------|
 | GET | `/api/transaction` | Obtener todas las transacciones |
 | GET | `/api/transaction/{id}` | Obtener transacción por ID |
-| GET | `/api/transaction/user/{name}` | Obtener transacciones por Tenpista |
+| GET | `/api/transaction/user/{name}` | Obtener transacciones por usuario |
 | POST | `/api/transaction` | Crear nueva transacción |
 | PUT | `/api/transaction/{id}` | Actualizar transacción |
 | DELETE | `/api/transaction/{id}` | Eliminar transacción |
@@ -270,10 +270,11 @@ docker build -t tenpi-transactions-backend ./backend
 # Ejecutar contenedor
 docker run -p 8080:8080 \
   -e DB_HOST=database \
-  -e DB_NAME=tenpi_db \
-  -e DB_USER=tenpi_user \
-  -e DB_PASSWORD=tenpi_pass \
-  tenpi-transactions-backend
+  -e DB_NAME=transactions_db \
+  -e DB_USER=transactions_user \
+  -e DB_PASSWORD=transactions_pass \
+  -- network transactions-network
+  transaction-service
 ```
 
 #### Frontend
@@ -292,12 +293,18 @@ docker run -p 3000:80 tenpi-transactions-frontend
 docker login
 
 # Tag de las imágenes
-docker tag tenpi-transactions-backend:latest username/tenpi-transactions-backend:1.0.0
-docker tag tenpi-transactions-frontend:latest username/tenpi-transactions-frontend:1.0.0
+docker tag transactions-service:latest jfelipepava/transactions-service:1.0.0
+docker tag transactions-client:latest jfelipepava/transactions-client:1.0.0
 
 # Push a Docker Hub
-docker push username/tenpi-transactions-backend:1.0.0
-docker push username/tenpi-transactions-frontend:1.0.0
+docker push jfelipepava/transactions-service:1.0.0
+docker push jfelipepava/transactions-client:1.0.0
+```
+
+### Construir y correr de manera local la app
+
+```bash
+docker-compose up --build
 ```
 
 ## 📊 Características Técnicas Avanzadas

@@ -1,5 +1,5 @@
 # Etapa 1: Build
-FROM node:21.5-apline AS build
+FROM node:21.5.0 AS build
 WORKDIR /app
 
 # Copiar archivos de dependencias
@@ -24,7 +24,7 @@ RUN npm run build
 # COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Exponer puerto
-EXPOSE 300
+EXPOSE 3000
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \

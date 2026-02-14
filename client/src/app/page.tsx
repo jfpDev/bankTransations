@@ -6,7 +6,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ToastContainer, toast } from 'react-toastify';
 // import 'react-toastify/dist/ReactToastify.css';
 import TransactionList from '../components/TransactionList';
-import TransactionForm from '../components/TransactionForm';
+import TransactionForm, { initialData, TransactionType } from '../components/TransactionForm';
 import {
   useTransactions,
   useCreateTransaction,
@@ -14,6 +14,7 @@ import {
   useDeleteTransaction,
 } from '../hooks/useTransactions';
 import '../styles/App.css';
+import { Transaction } from '../types';
 
 // Configurar React Query Client
 const queryClient = new QueryClient({
@@ -27,7 +28,9 @@ const queryClient = new QueryClient({
 });
 
 function AppContent() {
-  const [editingTransaction, setEditingTransaction] = useState(null);
+  const [editingTransaction, setEditingTransaction] = useState<TransactionType>(initialData);
+  const [isEditing, setIsEditing] = useState(false);
+
 
   // Hooks de React Query
   const { data: transactions, isLoading } = useTransactions();
@@ -36,50 +39,53 @@ function AppContent() {
   const deleteMutation = useDeleteTransaction();
 
   // Handler para crear transacción
-  const handleCreate = async (transactionData) => {
+  const handleCreate = async (transactionData: Transaction) => {
     try {
       await createMutation.mutateAsync(transactionData);
       toast.success('Transacción creada exitosamente');
-    } catch (error) {
-      toast.error(error.message || 'Error al crear la transacción');
+      setEditingTransaction(initialData);
+    } catch (error: any) {
+      toast.error(error?.message || 'Error al crear la transacción');
     }
   };
 
   // Handler para actualizar transacción
-  const handleUpdate = async (transactionData) => {
+  const handleUpdate = async (transactionData: Transaction) => {
     try {
       await updateMutation.mutateAsync({
         id: (editingTransaction as any).id,
         data: transactionData,
       });
       toast.success('Transacción actualizada exitosamente');
-      setEditingTransaction(null);
-    } catch (error) {
-      toast.error(error.message || 'Error al actualizar la transacción');
+      setEditingTransaction(initialData);
+      setIsEditing(false)
+    } catch (error: any) {
+      toast.error(error?.message || 'Error al actualizar la transacción');
     }
   };
 
   // Handler para eliminar transacción
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: number) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar esta transacción?')) {
       try {
         await deleteMutation.mutateAsync(id);
         toast.success('Transacción eliminada exitosamente');
-      } catch (error) {
-        toast.error(error.message || 'Error al eliminar la transacción');
+      } catch (error: any) {
+        toast.error(error?.message || 'Error al eliminar la transacción');
       }
     }
   };
 
   // Handler para editar transacción
-  const handleEdit = (transaction) => {
+  const handleEdit = (transaction: Transaction) => {
     setEditingTransaction(transaction);
+    setIsEditing(true)
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Handler para cancelar edición
   const handleCancelEdit = () => {
-    setEditingTransaction(null);
+    setEditingTransaction(initialData);
   };
 
   return (
@@ -95,7 +101,7 @@ function AppContent() {
         <div className="container">
           <TransactionForm
             transaction={editingTransaction}
-            onSubmit={editingTransaction ? handleUpdate : handleCreate}
+            onSubmit={isEditing ? handleUpdate : handleCreate}
             onCancel={handleCancelEdit}
             isLoading={createMutation.isPending || updateMutation.isPending}
           />
@@ -111,25 +117,11 @@ function AppContent() {
 
       <footer className="app-footer">
         <div className="container">
-          <p>© 2024 Tenpi Transactions - Sistema de Gestión de Transacciones</p>
           <p className="footer-info">
             Desarrollado con React + Spring Boot | Rate Limit: 3 requests/minuto
           </p>
         </div>
       </footer>
-
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
     </div>
   );
 }
